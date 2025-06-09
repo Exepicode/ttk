@@ -19,6 +19,12 @@ st.markdown("""
 metrika_file = st.file_uploader("📊 Загрузите выгрузку из Метрики", type="xlsx")
 calls_file = st.file_uploader("📞 Загрузите звонки из CRM", type="xlsx")
 
+st.header("🧾 План-Факт: Ввод данных")
+
+report_date = st.date_input("📅 Дата отчета", format="DD.MM.YYYY")
+search_cost = st.number_input("💰 Расход Поиск (F8)", min_value=0.0, step=100.0)
+rsya_cost = st.number_input("💰 Расход РСЯ (F9)", min_value=0.0, step=100.0)
+
 def normalize_region(s):
     return str(s).strip().lower().replace('г.', '').replace('-', '').replace('ё', 'е').replace(' ', '')
 
@@ -122,6 +128,14 @@ if metrika_file and calls_file:
                         st.warning(f"⚠️ Не удалось скачать шаблон: статус {response.status_code}")
                 except Exception as e:
                     st.warning(f"⚠️ Ошибка при вставке шаблона 'План-Факт': {e}")
+
+                try:
+                    plan_fact_ws = writer.book["План-Факт"]
+                    plan_fact_ws["D4"] = report_date.strftime("%d.%m.%Y")
+                    plan_fact_ws["F8"] = search_cost
+                    plan_fact_ws["F9"] = rsya_cost
+                except Exception as e:
+                    st.warning(f"⚠️ Не удалось записать данные в 'План-Факт': {e}")
 
                 result_df.to_excel(writer, sheet_name="Совпадения", index=False)
                 # Устанавливаем ширину столбцов на листе "Совпадения"
