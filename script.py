@@ -88,15 +88,33 @@ if metrika_file and calls_file:
                 visits_raw.to_excel(writer, sheet_name="Метрика", index=False, header=False)
                 pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
 
-                # Загружаем шаблон с GitHub и добавляем лист "План-Факт"
+                # Загружаем шаблон с GitHub
                 plan_template_url = "https://github.com/Exepicode/ttk/raw/refs/heads/main/ТТК-шаблон-отчета.xlsx"
-                response = requests.get(plan_template_url)
-                template_excel = BytesIO(response.content)
-                wb_template = load_workbook(template_excel, data_only=True)
+                headers = {
+                    "User-Agent": "Mozilla/5.0"
+                }
+                response = requests.get(plan_template_url, headers=headers)
 
-                if "План-Факт" in wb_template.sheetnames:
-                    plan_fact_df = pd.read_excel(template_excel, sheet_name="План-Факт")
-                    plan_fact_df.to_excel(writer, sheet_name="План-Факт", index=False)
+                if response.status_code == 200 and response.headers.get("Content-Type") == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                    template_excel = BytesIO(response.content)
+                    wb_template = load_workbook(template_excel, data_only=True)
+
+                    if "План-Факт" in wb_template.sheetnames:
+                        plan_fact_ws = wb_template["План-Факт"]
+                        new_ws = writer.book.create_sheet("План-Факт")
+                        for row in plan_fact_ws.iter_rows():
+                            for cell in row:
+                                new_cell = new_ws[cell.coordinate]
+                                new_cell.value = cell.value
+                                if cell.has_style:
+                                    new_cell.font = cell.font
+                                    new_cell.border = cell.border
+                                    new_cell.fill = cell.fill
+                                    new_cell.number_format = cell.number_format
+                                    new_cell.protection = cell.protection
+                                    new_cell.alignment = cell.alignment
+                else:
+                    st.warning("⚠️ Не удалось загрузить шаблон 'План-Факт' с GitHub.")
 
             st.success(f"✅ Найдено совпадений: {len(result_df)}")
             st.download_button("📥 Скачать Отчет ТТК", data=output.getvalue(), file_name="Отчет_ТТК.xlsx")
