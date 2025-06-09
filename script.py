@@ -85,7 +85,7 @@ if metrika_file and calls_file:
                     response = requests.get(template_url)
                     if response.status_code == 200:
                         template_excel = BytesIO(response.content)
-                        wb_template = load_workbook(template_excel, data_only=True)
+                        wb_template = load_workbook(template_excel, data_only=False)
 
                         if wb_template.sheetnames:
                             source_ws = wb_template.worksheets[0]
