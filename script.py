@@ -22,8 +22,8 @@ calls_file = st.file_uploader("📞 Загрузите звонки из CRM", t
 st.header("🧾 План-Факт: Ввод данных")
 
 report_date_range = st.date_input("📅 Период отчета", value=(pd.to_datetime("today").replace(day=1), pd.to_datetime("today")), format="DD.MM.YYYY")
-search_cost = st.number_input("💰 Расход Поиск (F8)", min_value=0.0, step=100.0)
-rsya_cost = st.number_input("💰 Расход РСЯ (F9)", min_value=0.0, step=100.0)
+search_cost = st.number_input("💰 Расход Поиск (с НДС)", min_value=0.0, step=100.0)
+rsya_cost = st.number_input("💰 Расход РСЯ (с НДС)", min_value=0.0, step=100.0)
 
 def normalize_region(s):
     return str(s).strip().lower().replace('г.', '').replace('-', '').replace('ё', 'е').replace(' ', '')
@@ -74,6 +74,10 @@ def match_data(calls, visits):
     }).drop_duplicates()
 
 result_df = pd.DataFrame()
+
+if not result_df.shape[0] and 'output' not in locals():
+    st.info("ℹ️ Отчет ожидает генерации — нажмите кнопку выше.")
+
 if st.button("🚀 Сгенерировать отчет"):
     with st.spinner("🔄 Обрабатываем данные..."):
         try:
@@ -160,7 +164,10 @@ if st.button("🚀 Сгенерировать отчет"):
 if not result_df.empty:
     st.success(f"✅ Найдено совпадений: {len(result_df)}")
 else:
-    st.info("ℹ️ Отчет не сгенерирован или совпадений не найдено.")
+    if not metrika_file or not calls_file:
+        st.info("ℹ️ Отчет будет без совпадений — загрузите файлы Метрики и Звонков, чтобы выполнить мэтчинг.")
+    else:
+        st.info("ℹ️ Отчет готов, но совпадений между звонками и визитами не найдено.")
 
 if 'output' in locals():
     st.download_button("📥 Скачать Отчет ТТК", data=output.getvalue(), file_name="Отчет_ТТК.xlsx")
