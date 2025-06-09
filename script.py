@@ -165,6 +165,13 @@ if st.button("🚀 Сгенерировать отчет"):
                 if calls_file:
                     pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
 
+            st.download_button(
+                label="📥 Скачать отчет (XLSX)",
+                data=output.getvalue(),
+                file_name="Отчет_ТТК.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
         except Exception as e:
             st.error(f"❌ Ошибка обработки: {e}")
 
