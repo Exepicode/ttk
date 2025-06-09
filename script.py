@@ -39,12 +39,14 @@ def process_calls(df):
     df.columns = df.columns.str.strip()
     df['call_time'] = pd.to_datetime(df['Дата'].astype(str) + ' ' + df['Время'].astype(str), errors='coerce')
     df['region'] = df['Город'].apply(normalize_region)
+    if '№ тел.' in df.columns:
+        df = df.rename(columns={'№ тел.': 'Телефон'})
     df = df.dropna(subset=['call_time', 'region'])
     return df
 
 def match_data(calls, visits):
     merged = pd.merge(
-        calls[['call_time', 'region', 'Телефон']] if 'Телефон' in calls.columns else calls[['call_time', 'region']],
+        calls[['call_time', 'region', '№ тел.']] if '№ тел.' in calls.columns else calls[['call_time', 'region']],
         visits[['visit_time', 'visit_end', 'region']],
         on='region',
         how='inner'
