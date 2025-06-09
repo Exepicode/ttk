@@ -25,6 +25,17 @@ report_date_range = st.date_input("📅 Период отчета", value=(pd.to
 search_cost = st.number_input("💰 Расход Поиск (с НДС)", min_value=0.0, step=100.0)
 rsya_cost = st.number_input("💰 Расход РСЯ (с НДС)", min_value=0.0, step=100.0)
 
+# Новые поля ввода для Поиска и РСЯ
+st.subheader("🔍 Поиск")
+search_impressions = st.number_input("👁 Показы факт (Поиск)", min_value=0, step=100)
+search_clicks = st.number_input("🖱 Клики факт (Поиск)", min_value=0, step=10)
+search_goals = st.number_input("🎯 Заявки по Метрике (Поиск)", min_value=0, step=1)
+
+st.subheader("🟡 РСЯ")
+rsya_impressions = st.number_input("👁 Показы факт (РСЯ)", min_value=0, step=100)
+rsya_clicks = st.number_input("🖱 Клики факт (РСЯ)", min_value=0, step=10)
+rsya_goals = st.number_input("🎯 Заявки по Метрике (РСЯ)", min_value=0, step=1)
+
 def normalize_region(s):
     return str(s).strip().lower().replace('г.', '').replace('-', '').replace('ё', 'е').replace(' ', '')
 
@@ -149,6 +160,14 @@ if st.button("🚀 Сгенерировать отчет"):
                     plan_fact_ws["D4"] = f"{report_date_range[0].strftime('%d.%m.%Y')} – {report_date_range[1].strftime('%d.%m.%Y')}"
                     plan_fact_ws["F8"] = search_cost
                     plan_fact_ws["F9"] = rsya_cost
+                    # Новые значения для показов, кликов, заявок (Поиск и РСЯ)
+                    plan_fact_ws["H8"] = search_impressions
+                    plan_fact_ws["H9"] = rsya_impressions
+                    plan_fact_ws["J8"] = search_clicks
+                    plan_fact_ws["J9"] = rsya_clicks
+                    plan_fact_ws["P8"] = search_goals
+                    plan_fact_ws["P9"] = rsya_goals
+                    plan_fact_ws["Q8"] = len(result_df)
                 except Exception as e:
                     st.warning(f"⚠️ Не удалось записать данные в 'План-Факт': {e}")
 
