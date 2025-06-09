@@ -23,29 +23,27 @@ st.header("🧾 План-Факт: Ввод данных")
 
 report_date_range = st.date_input("📅 Период отчета", value=(pd.to_datetime("today").replace(day=1), pd.to_datetime("today")), format="DD.MM.YYYY")
 
-col1, col2, col3 = st.columns(3)
+st.markdown("### 🔍 Поиск")
+col1, col2, col3, col4 = st.columns([1.5, 1, 1, 1])
 with col1:
-    search_cost = st.number_input("💰 Расход Поиск (с НДС)", min_value=0.0, step=100.0)
+    search_cost = st.number_input("💰 Расход (с НДС)", min_value=0.0, step=100.0)
 with col2:
-    search_impressions = st.number_input("👁 Показы Поиск", min_value=0, step=100)
+    search_impressions = st.number_input("👁 Показы", min_value=0, step=100)
 with col3:
-    search_clicks = st.number_input("🖱 Клики Поиск", min_value=0, step=1)
-
-col4, col5 = st.columns(2)
+    search_clicks = st.number_input("🖱 Клики", min_value=0, step=1)
 with col4:
-    search_conversions = st.number_input("📩 Заявки Поиск (по Метрике)", min_value=0, step=1)
+    search_conversions = st.number_input("📩 Заявки (по Метрике)", min_value=0, step=1)
 
-col6, col7, col8 = st.columns(3)
+st.markdown("### 🟡 РСЯ")
+col5, col6, col7, col8 = st.columns([1.5, 1, 1, 1])
+with col5:
+    rsya_cost = st.number_input("💰 Расход (с НДС)", min_value=0.0, step=100.0, key="rsya_cost")
 with col6:
-    rsya_cost = st.number_input("💰 Расход РСЯ (с НДС)", min_value=0.0, step=100.0)
+    rsya_impressions = st.number_input("👁 Показы", min_value=0, step=100, key="rsya_impressions")
 with col7:
-    rsya_impressions = st.number_input("👁 Показы РСЯ", min_value=0, step=100)
+    rsya_clicks = st.number_input("🖱 Клики", min_value=0, step=1, key="rsya_clicks")
 with col8:
-    rsya_clicks = st.number_input("🖱 Клики РСЯ", min_value=0, step=1)
-
-col9 = st.columns(1)[0]
-with col9:
-    rsya_conversions = st.number_input("📩 Заявки РСЯ (по Метрике)", min_value=0, step=1)
+    rsya_conversions = st.number_input("📩 Заявки (по Метрике)", min_value=0, step=1, key="rsya_conversions")
 
 def normalize_region(s):
     return str(s).strip().lower().replace('г.', '').replace('-', '').replace('ё', 'е').replace(' ', '')
