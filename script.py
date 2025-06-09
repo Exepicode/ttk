@@ -8,7 +8,7 @@ st.title("📞 Отчет ТТК — Мэтчинг звонков и визит
 
 st.markdown("""
 **Инструкция:**
-1. Загрузите файл **выгрузки из Метрики** — [перейти к отчёту](https://metrika.yandex.ru/stat/6cfa6793-da4e-405e-8815-75076218c2af?goal=141746908&group=day&period=week&currency=RUB&id=51634436&isMinSamplingEnabled=false&attr=%7B%22attributionId%22%3A%22LastSign%22%2C%22isCrossDevice%22%3Afalse%7D&stateHash=67f77d9a2d9408000c389012)  
+1. Загрузите файл **выгрузки из Метрики** — [ссылка на Метрику](https://metrika.yandex.ru/stat/visits)  
    Важно: при формировании отчёта выберите **период с начала месяца до последнего воскресенья**, скачайте файл в формате **XLSX**
 2. Загрузите файл **звонков из CRM** — обычно называется *«Детальный отчет»*, его присылает КС в рабочий чат
 3. Нажмите на кнопку ниже, чтобы получить файл со списком совпадений
@@ -43,15 +43,18 @@ def process_calls(df):
     return df
 
 def match_data(calls, visits):
-    merged = pd.merge(calls, visits[['visit_time', 'visit_end', 'region']], on='region', how='inner')
+    merged = pd.merge(
+        calls[['call_time', 'region', 'Телефон']] if 'Телефон' in calls.columns else calls[['call_time', 'region']],
+        visits[['visit_time', 'visit_end', 'region']],
+        on='region',
+        how='inner'
+    )
     merged = merged[
         (merged['call_time'] >= merged['visit_time']) &
         (merged['call_time'] <= merged['visit_end'])
     ].copy()
     merged['Call DateTime'] = merged['call_time']
-    if 'Телефон' in calls.columns:
-        merged['Телефон'] = calls.set_index('call_time').reindex(merged['call_time'].values)['Телефон'].values
-    else:
+    if 'Телефон' not in merged.columns:
         merged['Телефон'] = ''
     return merged[['Call DateTime', 'visit_time', 'region', 'Телефон']].drop_duplicates()
 
