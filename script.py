@@ -73,6 +73,12 @@ if metrika_file and calls_file:
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 result_df.to_excel(writer, sheet_name="Совпадения", index=False)
+                # Устанавливаем ширину столбцов на листе "Совпадения"
+                worksheet = writer.sheets["Совпадения"]
+                for column_cells in worksheet.columns:
+                    max_length = 20
+                    col_letter = column_cells[0].column_letter
+                    worksheet.column_dimensions[col_letter].width = max_length
                 visits_raw.to_excel(writer, sheet_name="Метрика", index=False, header=False)
                 pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
 
