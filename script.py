@@ -114,7 +114,7 @@ if metrika_file and calls_file:
                                     new_cell.protection = cell.protection
                                     new_cell.alignment = cell.alignment
                 else:
-                    st.warning("⚠️ Не удалось загрузить шаблон 'План-Факт' с GitHub.")
+                    st.warning(f"⚠️ Не удалось загрузить шаблон 'План-Факт' с GitHub. Статус: {response.status_code}, Content-Type: {response.headers.get('Content-Type')}")
 
             st.success(f"✅ Найдено совпадений: {len(result_df)}")
             st.download_button("📥 Скачать Отчет ТТК", data=output.getvalue(), file_name="Отчет_ТТК.xlsx")
