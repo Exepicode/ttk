@@ -242,6 +242,39 @@ if st.button("🚀 Сгенерировать отчет"):
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
 
+            if search_conversions_plan > 0:
+                lead_price_fact = search_cost / search_conversions if search_conversions > 0 else 0
+                lead_price_plan = search_cost_plan / search_conversions_plan
+                lead_price_diff_pct = ((lead_price_fact - lead_price_plan) / lead_price_plan) * 100 if lead_price_plan else 0
+
+                st.markdown("### 📊 Выводы по показателям")
+                st.markdown(f"""
+                **Поиск:**
+                - Выполнение плана по расходу: {search_cost / search_cost_plan * 100:.1f}%
+                - Выполнение плана по показам: {search_impressions / search_impressions_plan * 100:.1f}%
+                - Выполнение плана по кликам: {search_clicks / search_clicks_plan * 100:.1f}%
+                - Выполнение плана по заявкам: {search_conversions / search_conversions_plan * 100:.1f}%
+                - Цена лида (факт): {lead_price_fact:.0f} ₽
+                - Цена лида (план): {lead_price_plan:.0f} ₽
+                - Отклонение цены лида от плана: {lead_price_diff_pct:+.1f}%
+                """)
+
+            if rsya_conversions_plan > 0:
+                lead_price_fact_rsya = rsya_cost / rsya_conversions if rsya_conversions > 0 else 0
+                lead_price_plan_rsya = rsya_cost_plan / rsya_conversions_plan
+                lead_price_diff_pct_rsya = ((lead_price_fact_rsya - lead_price_plan_rsya) / lead_price_plan_rsya) * 100 if lead_price_plan_rsya else 0
+
+                st.markdown(f"""
+                **РСЯ:**
+                - Выполнение плана по расходу: {rsya_cost / rsya_cost_plan * 100:.1f}%
+                - Выполнение плана по показам: {rsya_impressions / rsya_impressions_plan * 100:.1f}%
+                - Выполнение плана по кликам: {rsya_clicks / rsya_clicks_plan * 100:.1f}%
+                - Выполнение плана по заявкам: {rsya_conversions / rsya_conversions_plan * 100:.1f}%
+                - Цена лида (факт): {lead_price_fact_rsya:.0f} ₽
+                - Цена лида (план): {lead_price_plan_rsya:.0f} ₽
+                - Отклонение цены лида от плана: {lead_price_diff_pct_rsya:+.1f}%
+                """)
+
         except Exception as e:
             st.error(f"❌ Ошибка обработки: {e}")
 
