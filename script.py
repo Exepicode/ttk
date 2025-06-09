@@ -46,7 +46,7 @@ def process_calls(df):
 
 def match_data(calls, visits):
     merged = pd.merge(
-        calls[['call_time', 'region', '№ тел.']] if '№ тел.' in calls.columns else calls[['call_time', 'region']],
+        calls[['call_time', 'region']],
         visits[['visit_time', 'visit_end', 'region']],
         on='region',
         how='inner'
@@ -56,9 +56,10 @@ def match_data(calls, visits):
         (merged['call_time'] <= merged['visit_end'])
     ].copy()
     merged['Call DateTime'] = merged['call_time']
-    if 'Телефон' not in merged.columns:
-        merged['Телефон'] = ''
-    return merged[['Call DateTime', 'visit_time', 'region', 'Телефон']].drop_duplicates()
+    return merged[['call_time', 'visit_time', 'region']].rename(columns={
+        'call_time': 'Время звонка',
+        'visit_time': 'Время визита'
+    }).drop_duplicates()
 
 if metrika_file and calls_file:
     with st.spinner("🔄 Обрабатываем данные..."):
