@@ -71,7 +71,7 @@ if metrika_file and calls_file:
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 result_df.to_excel(writer, sheet_name="Совпадения", index=False)
                 visits_raw.to_excel(writer, sheet_name="Метрика", index=False, header=False)
-                calls_df.to_excel(writer, sheet_name="Звонки", index=False)
+                pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
 
             st.success(f"✅ Найдено совпадений: {len(result_df)}")
             st.download_button("📥 Скачать Отчет ТТК", data=output.getvalue(), file_name="Отчет_ТТК.xlsx")
