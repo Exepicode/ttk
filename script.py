@@ -78,6 +78,11 @@ result_df = pd.DataFrame()
 if not result_df.empty:
     st.success(f"✅ Найдено совпадений: {len(result_df)}")
 
+if not metrika_file or not calls_file:
+    st.info("ℹ️ Отчет будет без совпадений — загрузите оба файла для мэтчинга.")
+else:
+    st.info("ℹ️ Отчет ожидает генерации — нажмите кнопку ниже.")
+
 if st.button("🚀 Сгенерировать отчет"):
     with st.spinner("🔄 Обрабатываем данные..."):
         try:
@@ -131,7 +136,7 @@ if st.button("🚀 Сгенерировать отчет"):
                             for row_idx, dim in source_ws.row_dimensions.items():
                                 target_ws.row_dimensions[row_idx].height = dim.height
                             target_ws.row_dimensions[7].height = 1
-                            target_ws.column_dimensions['F'].width = 100
+                            target_ws.column_dimensions['F'].width = 15
                         else:
                             st.warning("⚠️ В шаблоне отсутствуют листы")
                     else:
