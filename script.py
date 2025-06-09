@@ -21,7 +21,7 @@ calls_file = st.file_uploader("📞 Загрузите звонки из CRM", t
 
 st.header("🧾 План-Факт: Ввод данных")
 
-report_date = st.date_input("📅 Дата отчета", format="DD.MM.YYYY")
+report_date_range = st.date_input("📅 Период отчета", value=(pd.to_datetime("today").replace(day=1), pd.to_datetime("today")), format="DD.MM.YYYY")
 search_cost = st.number_input("💰 Расход Поиск (F8)", min_value=0.0, step=100.0)
 rsya_cost = st.number_input("💰 Расход РСЯ (F9)", min_value=0.0, step=100.0)
 
@@ -122,6 +122,7 @@ if metrika_file and calls_file:
                                 target_ws.column_dimensions[col_letter].width = dim.width
                             for row_idx, dim in source_ws.row_dimensions.items():
                                 target_ws.row_dimensions[row_idx].height = dim.height
+                            target_ws.row_dimensions[7].height = 1
                         else:
                             st.warning("⚠️ В шаблоне отсутствуют листы")
                     else:
@@ -131,7 +132,7 @@ if metrika_file and calls_file:
 
                 try:
                     plan_fact_ws = writer.book["План-Факт"]
-                    plan_fact_ws["D4"] = report_date.strftime("%d.%m.%Y")
+                    plan_fact_ws["D4"] = f"{report_date_range[0].strftime('%d.%m.%Y')} – {report_date_range[1].strftime('%d.%m.%Y')}"
                     plan_fact_ws["F8"] = search_cost
                     plan_fact_ws["F9"] = rsya_cost
                 except Exception as e:
