@@ -89,7 +89,7 @@ if metrika_file and calls_file:
                 pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
 
                 # Загружаем шаблон с GitHub
-                plan_template_url = "https://github.com/Exepicode/ttk/raw/refs/heads/main/ТТК-шаблон-отчета.xlsx"
+                plan_template_url = "https://raw.githubusercontent.com/Exepicode/ttk/main/ТТК-шаблон-отчета.xlsx"
                 headers = {
                     "User-Agent": "Mozilla/5.0"
                 }
