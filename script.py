@@ -89,31 +89,9 @@ if metrika_file and calls_file:
                         wb_template = load_workbook(template_excel, data_only=True)
 
                         if wb_template.sheetnames:
-                            source_ws = wb_template.worksheets[0]
-                            source_ws.title = "План-Факт"
-                            target_ws = writer.book.create_sheet("План-Факт")
-
-                            for row in source_ws.iter_rows():
-                                for cell in row:
-                                    if cell.data_type == 'f':
-                                        new_cell = target_ws.cell(row=cell.row, column=cell.column, value=f"={cell.value}")
-                                    else:
-                                        new_cell = target_ws.cell(row=cell.row, column=cell.column, value=cell.value)
-                                    try:
-                                        if cell.has_style:
-                                            new_cell.font = cell.font.copy()
-                                            new_cell.border = cell.border.copy()
-                                            new_cell.fill = cell.fill.copy()
-                                            new_cell.number_format = cell.number_format
-                                            new_cell.protection = cell.protection.copy()
-                                            new_cell.alignment = cell.alignment.copy()
-                                    except Exception as style_error:
-                                        st.warning(f"⚠️ Стиль не скопирован для ячейки {cell.coordinate}: {style_error}")
-
-                            for col_letter, dim in source_ws.column_dimensions.items():
-                                target_ws.column_dimensions[col_letter].width = dim.width
-                            for row_idx, dim in source_ws.row_dimensions.items():
-                                target_ws.row_dimensions[row_idx].height = dim.height
+                            source_ws = wb_template["План-Факт"]
+                            new_ws = writer.book.copy_worksheet(source_ws)
+                            new_ws.title = "План-Факт"
                         else:
                             st.warning("⚠️ В шаблоне отсутствуют листы")
                     else:
