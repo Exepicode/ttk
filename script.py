@@ -78,15 +78,6 @@ if metrika_file and calls_file:
 
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                result_df.to_excel(writer, sheet_name="Совпадения", index=False)
-                # Устанавливаем ширину столбцов на листе "Совпадения"
-                worksheet = writer.sheets["Совпадения"]
-                for column_cells in worksheet.columns:
-                    max_length = 20
-                    col_letter = column_cells[0].column_letter
-                    worksheet.column_dimensions[col_letter].width = max_length
-                visits_raw.to_excel(writer, sheet_name="Метрика", index=False, header=False)
-                pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
 
                 # Загружаем шаблон с GitHub
                 plan_template_url = "https://raw.githubusercontent.com/Exepicode/ttk/main/ТТК-шаблон-отчета.xlsx"
@@ -100,12 +91,12 @@ if metrika_file and calls_file:
                     wb_template = load_workbook(template_excel, data_only=True)
 
                     if "План-Факт" in wb_template.sheetnames:
-                        plan_fact_ws = wb_template["План-Факт"]
+                        source_ws = wb_template["План-Факт"]
                         new_ws = writer.book.create_sheet("План-Факт")
-                        for row in plan_fact_ws.iter_rows():
+
+                        for row in source_ws.iter_rows():
                             for cell in row:
-                                new_cell = new_ws[cell.coordinate]
-                                new_cell.value = cell.value
+                                new_cell = new_ws.cell(row=cell.row, column=cell.column, value=cell.value)
                                 if cell.has_style:
                                     new_cell.font = cell.font
                                     new_cell.border = cell.border
@@ -115,6 +106,16 @@ if metrika_file and calls_file:
                                     new_cell.alignment = cell.alignment
                 else:
                     st.warning(f"⚠️ Не удалось загрузить шаблон 'План-Факт' с GitHub. Статус: {response.status_code}, Content-Type: {response.headers.get('Content-Type')}")
+
+                result_df.to_excel(writer, sheet_name="Совпадения", index=False)
+                # Устанавливаем ширину столбцов на листе "Совпадения"
+                worksheet = writer.sheets["Совпадения"]
+                for column_cells in worksheet.columns:
+                    max_length = 20
+                    col_letter = column_cells[0].column_letter
+                    worksheet.column_dimensions[col_letter].width = max_length
+                visits_raw.to_excel(writer, sheet_name="Метрика", index=False, header=False)
+                pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
 
             st.success(f"✅ Найдено совпадений: {len(result_df)}")
             st.download_button("📥 Скачать Отчет ТТК", data=output.getvalue(), file_name="Отчет_ТТК.xlsx")
