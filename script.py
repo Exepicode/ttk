@@ -97,8 +97,8 @@ if metrika_file and calls_file:
                                     continue
                                 for cell in row:
                                     new_cell = target_ws.cell(row=cell.row, column=cell.column)
-                                    if cell.data_type == 'f':  # если формула
-                                        new_cell.value = f"={cell.value}"
+                                    if cell.data_type == 'f' or (isinstance(cell.value, str) and cell.value.startswith("=")):
+                                        new_cell.value = cell.value
                                     else:
                                         new_cell.value = cell.value
                                     try:
