@@ -105,6 +105,11 @@ if metrika_file and calls_file:
                                             new_cell.alignment = cell.alignment.copy()
                                     except Exception as style_error:
                                         st.warning(f"⚠️ Стиль не скопирован для ячейки {cell.coordinate}: {style_error}")
+
+                            for col_letter, dim in source_ws.column_dimensions.items():
+                                target_ws.column_dimensions[col_letter].width = dim.width
+                            for row_idx, dim in source_ws.row_dimensions.items():
+                                target_ws.row_dimensions[row_idx].height = dim.height
                         else:
                             st.warning("⚠️ В шаблоне отсутствуют листы")
                     else:
