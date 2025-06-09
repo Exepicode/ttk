@@ -93,8 +93,14 @@ if metrika_file and calls_file:
                             target_ws = writer.book.create_sheet("План-Факт")
 
                             for row in source_ws.iter_rows():
+                                if all(cell.value in (None, "") for cell in row):
+                                    continue
                                 for cell in row:
-                                    new_cell = target_ws.cell(row=cell.row, column=cell.column, value=cell.value)
+                                    new_cell = target_ws.cell(row=cell.row, column=cell.column)
+                                    if cell.data_type == 'f':  # если формула
+                                        new_cell.value = f"={cell.value}"
+                                    else:
+                                        new_cell.value = cell.value
                                     try:
                                         if cell.has_style:
                                             new_cell.font = cell.font.copy()
