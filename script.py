@@ -47,26 +47,39 @@ with col8:
     rsya_conversions = st.number_input("📩 Заявки (по Метрике)", min_value=0, step=1, key="rsya_conversions")
 
 st.markdown("### 🧠 Плановые показатели (необязательно)")
-with st.expander("📋 Плановые значения (по умолчанию из шаблона — можно изменить)", expanded=False):
-    col_plan1, col_plan2, col_plan3, col_plan4 = st.columns([1.5, 1, 1, 1])
-    with col_plan1:
-        search_cost_plan = st.number_input("💰 План расход Поиск", min_value=0.0, step=100.0, value=630540.0)
-    with col_plan2:
-        search_impressions_plan = st.number_input("👁 План показы Поиск", min_value=0, step=100, value=50768)
-    with col_plan3:
-        search_clicks_plan = st.number_input("🖱 План клики Поиск", min_value=0, step=1, value=7006)
-    with col_plan4:
-        search_conversions_plan = st.number_input("📩 План заявки Поиск", min_value=0, step=1, value=220)
+show_plan_inputs = st.checkbox("📋 Изменить плановые значения", value=False)
 
-    col_plan5, col_plan6, col_plan7, col_plan8 = st.columns([1.5, 1, 1, 1])
-    with col_plan5:
-        rsya_cost_plan = st.number_input("💰 План расход РСЯ", min_value=0.0, step=100.0, value=61008.0)
-    with col_plan6:
-        rsya_impressions_plan = st.number_input("👁 План показы РСЯ", min_value=0, step=100, value=211833)
-    with col_plan7:
-        rsya_clicks_plan = st.number_input("🖱 План клики РСЯ", min_value=0, step=1, value=2542)
-    with col_plan8:
-        rsya_conversions_plan = st.number_input("📩 План заявки РСЯ", min_value=0, step=1, value=22)
+if show_plan_inputs:
+    with st.container():
+        st.markdown("⚙️ По умолчанию установлены плановые значения июня 2025. Вы можете изменить их ниже.")
+        col_plan1, col_plan2, col_plan3, col_plan4 = st.columns([1.5, 1, 1, 1])
+        with col_plan1:
+            search_cost_plan = st.number_input("💰 План расход Поиск", min_value=0.0, step=100.0, value=630540.0)
+        with col_plan2:
+            search_impressions_plan = st.number_input("👁 План показы Поиск", min_value=0, step=100, value=50768)
+        with col_plan3:
+            search_clicks_plan = st.number_input("🖱 План клики Поиск", min_value=0, step=1, value=7006)
+        with col_plan4:
+            search_conversions_plan = st.number_input("📩 План заявки Поиск", min_value=0, step=1, value=220)
+
+        col_plan5, col_plan6, col_plan7, col_plan8 = st.columns([1.5, 1, 1, 1])
+        with col_plan5:
+            rsya_cost_plan = st.number_input("💰 План расход РСЯ", min_value=0.0, step=100.0, value=61008.0)
+        with col_plan6:
+            rsya_impressions_plan = st.number_input("👁 План показы РСЯ", min_value=0, step=100, value=211833)
+        with col_plan7:
+            rsya_clicks_plan = st.number_input("🖱 План клики РСЯ", min_value=0, step=1, value=2542)
+        with col_plan8:
+            rsya_conversions_plan = st.number_input("📩 План заявки РСЯ", min_value=0, step=1, value=22)
+else:
+    search_cost_plan = 630540.0
+    search_impressions_plan = 50768
+    search_clicks_plan = 7006
+    search_conversions_plan = 220
+    rsya_cost_plan = 61008.0
+    rsya_impressions_plan = 211833
+    rsya_clicks_plan = 2542
+    rsya_conversions_plan = 22
 
 def normalize_region(s):
     return str(s).strip().lower().replace('г.', '').replace('-', '').replace('ё', 'е').replace(' ', '')
