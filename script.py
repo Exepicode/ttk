@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import timedelta
+
 from io import BytesIO
 import requests
 from openpyxl import load_workbook
@@ -94,7 +95,10 @@ if metrika_file and calls_file:
 
                             for row in source_ws.iter_rows():
                                 for cell in row:
-                                    new_cell = target_ws.cell(row=cell.row, column=cell.column, value=cell.value)
+                                    if cell.data_type == 'f':
+                                        new_cell = target_ws.cell(row=cell.row, column=cell.column, value=f"={cell.value}")
+                                    else:
+                                        new_cell = target_ws.cell(row=cell.row, column=cell.column, value=cell.value)
                                     try:
                                         if cell.has_style:
                                             new_cell.font = cell.font.copy()
