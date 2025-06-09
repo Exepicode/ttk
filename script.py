@@ -3,24 +3,23 @@ import pandas as pd
 from datetime import timedelta
 from io import BytesIO
 
-st.set_page_config(page_title="Мэтчинг Звонков", layout="wide")
-st.title("📞 Мэтчинг звонков и Метрики (60 минут)")
+st.set_page_config(page_title="Отчет ТТК", layout="wide")
+st.title("📞 Отчет ТТК — Мэтчинг звонков и визитов (60 минут)")
 
 st.markdown("""
 **Инструкция:**
-1. Загрузите файл **Метрика.xlsx** (в таблице данные с 8 строки)
-2. Загрузите файл **Звонки.xlsx**
-3. Нажмите на кнопку ниже — и получите Excel с совпадениями.
+1. Загрузите файл **выгрузки из Метрики** (где есть дата и время визита и город)
+2. Загрузите файл **звонков из CRM** (где есть дата, время и город звонка)
+3. Нажмите на кнопку ниже, чтобы получить файл со списком совпадений
 """)
 
-metrika_file = st.file_uploader("📊 Загрузите файл Метрики", type="xlsx")
-calls_file = st.file_uploader("📞 Загрузите файл Звонков", type="xlsx")
+metrika_file = st.file_uploader("📊 Загрузите выгрузку из Метрики", type="xlsx")
+calls_file = st.file_uploader("📞 Загрузите звонки из CRM", type="xlsx")
 
 def normalize_region(s):
     return str(s).strip().lower().replace('г.', '').replace('-', '').replace('ё', 'е').replace(' ', '')
 
 def process_visits(df):
-    # Найдём заголовок
     for i, row in df.iterrows():
         if str(row.iloc[0]).strip().lower().startswith('дата и время визита'):
             df.columns = row
@@ -54,7 +53,7 @@ def match_data(calls, visits):
     return final[['Call Time', 'Call Date', 'region', 'visit_time']]
 
 if metrika_file and calls_file:
-    with st.spinner("🔄 Обрабатываем..."):
+    with st.spinner("🔄 Обрабатываем данные..."):
         try:
             visits_raw = pd.read_excel(metrika_file, header=None)
             visits_df = process_visits(visits_raw)
@@ -69,6 +68,6 @@ if metrika_file and calls_file:
                 calls_df.to_excel(writer, sheet_name="Звонки", index=False)
 
             st.success(f"✅ Найдено совпадений: {len(result_df)}")
-            st.download_button("📥 Скачать Excel", data=output.getvalue(), file_name="Результат_мэтчинга.xlsx")
+            st.download_button("📥 Скачать Отчет ТТК", data=output.getvalue(), file_name="Отчет_ТТК.xlsx")
         except Exception as e:
-            st.error(f"❌ Ошибка: {e}")
+            st.error(f"❌ Ошибка обработки: {e}")
