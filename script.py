@@ -47,10 +47,9 @@ def match_data(calls, visits):
         (merged['call_time'] >= merged['visit_time']) &
         (merged['call_time'] <= merged['visit_end'])
     ].copy()
-    merged['Call Time'] = merged['call_time'].dt.time
-    merged['Call Date'] = merged['call_time'].dt.date
+    merged['Call DateTime'] = merged['call_time']
     final = merged.groupby('call_time').first().reset_index()
-    return final[['Call Time', 'Call Date', 'region', 'visit_time']]
+    return final[['Call DateTime', 'visit_time', 'region', 'Телефон']]
 
 if metrika_file and calls_file:
     with st.spinner("🔄 Обрабатываем данные..."):
