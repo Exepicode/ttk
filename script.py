@@ -79,33 +79,34 @@ if metrika_file and calls_file:
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
 
-                # Загружаем шаблон с GitHub
-                plan_template_url = "https://raw.githubusercontent.com/Exepicode/ttk/main/ТТК-шаблон-отчета.xlsx"
-                headers = {
-                    "User-Agent": "Mozilla/5.0"
-                }
-                response = requests.get(plan_template_url, headers=headers)
+                # Добавляем шаблон "План-Факт" из GitHub как лист
+                try:
+                    template_url = "https://github.com/Exepicode/ttk/raw/main/ТТК-шаблон-отчета.xlsx"
+                    response = requests.get(template_url)
+                    if response.status_code == 200:
+                        template_excel = BytesIO(response.content)
+                        wb_template = load_workbook(template_excel, data_only=True)
 
-                if response.status_code == 200:
-                    template_excel = BytesIO(response.content)
-                    wb_template = load_workbook(template_excel, data_only=True)
+                        if "План-Факт" in wb_template.sheetnames:
+                            source_ws = wb_template["План-Факт"]
+                            target_ws = writer.book.create_sheet("План-Факт")
 
-                    if "План-Факт" in wb_template.sheetnames:
-                        source_ws = wb_template["План-Факт"]
-                        new_ws = writer.book.create_sheet("План-Факт")
-
-                        for row in source_ws.iter_rows():
-                            for cell in row:
-                                new_cell = new_ws.cell(row=cell.row, column=cell.column, value=cell.value)
-                                if cell.has_style:
-                                    new_cell.font = cell.font
-                                    new_cell.border = cell.border
-                                    new_cell.fill = cell.fill
-                                    new_cell.number_format = cell.number_format
-                                    new_cell.protection = cell.protection
-                                    new_cell.alignment = cell.alignment
-                else:
-                    st.warning(f"⚠️ Не удалось загрузить шаблон 'План-Факт' с GitHub. Статус: {response.status_code}, Content-Type: {response.headers.get('Content-Type')}")
+                            for row in source_ws.iter_rows():
+                                for cell in row:
+                                    new_cell = target_ws.cell(row=cell.row, column=cell.column, value=cell.value)
+                                    if cell.has_style:
+                                        new_cell.font = cell.font
+                                        new_cell.border = cell.border
+                                        new_cell.fill = cell.fill
+                                        new_cell.number_format = cell.number_format
+                                        new_cell.protection = cell.protection
+                                        new_cell.alignment = cell.alignment
+                        else:
+                            st.warning("⚠️ В шаблоне отсутствует лист 'План-Факт'")
+                    else:
+                        st.warning(f"⚠️ Не удалось скачать шаблон: статус {response.status_code}")
+                except Exception as e:
+                    st.warning(f"⚠️ Ошибка при вставке шаблона 'План-Факт': {e}")
 
                 result_df.to_excel(writer, sheet_name="Совпадения", index=False)
                 # Устанавливаем ширину столбцов на листе "Совпадения"
@@ -116,19 +117,6 @@ if metrika_file and calls_file:
                     worksheet.column_dimensions[col_letter].width = max_length
                 visits_raw.to_excel(writer, sheet_name="Метрика", index=False, header=False)
                 pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
-
-                # Добавляем шаблон "План-Факт" из GitHub как лист
-                try:
-                    template_url = "https://github.com/Exepicode/ttk/raw/main/ТТК-шаблон-отчета.xlsx"
-                    response = requests.get(template_url)
-                    if response.status_code == 200:
-                        template_excel = BytesIO(response.content)
-                        plan_df = pd.read_excel(template_excel, sheet_name="План-Факт")
-                        plan_df.to_excel(writer, sheet_name="План-Факт", index=False)
-                    else:
-                        st.warning(f"⚠️ Не удалось скачать шаблон: статус {response.status_code}")
-                except Exception as e:
-                    st.warning(f"⚠️ Не удалось прочитать лист 'План-Факт': {e}")
 
             st.success(f"✅ Найдено совпадений: {len(result_df)}")
             st.download_button("📥 Скачать Отчет ТТК", data=output.getvalue(), file_name="Отчет_ТТК.xlsx")
