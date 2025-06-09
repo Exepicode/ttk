@@ -117,6 +117,19 @@ if metrika_file and calls_file:
                 visits_raw.to_excel(writer, sheet_name="Метрика", index=False, header=False)
                 pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
 
+                # Добавляем шаблон "План-Факт" из GitHub как лист
+                try:
+                    template_url = "https://github.com/Exepicode/ttk/raw/main/ТТК-шаблон-отчета.xlsx"
+                    response = requests.get(template_url)
+                    if response.status_code == 200:
+                        template_excel = BytesIO(response.content)
+                        plan_df = pd.read_excel(template_excel, sheet_name="План-Факт")
+                        plan_df.to_excel(writer, sheet_name="План-Факт", index=False)
+                    else:
+                        st.warning(f"⚠️ Не удалось скачать шаблон: статус {response.status_code}")
+                except Exception as e:
+                    st.warning(f"⚠️ Не удалось прочитать лист 'План-Факт': {e}")
+
             st.success(f"✅ Найдено совпадений: {len(result_df)}")
             st.download_button("📥 Скачать Отчет ТТК", data=output.getvalue(), file_name="Отчет_ТТК.xlsx")
         except Exception as e:
