@@ -1,65 +1,74 @@
 import streamlit as st
 import pandas as pd
+from datetime import timedelta
 from io import BytesIO
-from datetime import datetime, timedelta
 
-st.set_page_config(page_title="Мэтчинг Звонков и Метрики", layout="wide")
-st.title("\U0001F4F1 Мэтчинг Звонков с Метрикой (Окно 60 минут)")
+st.set_page_config(page_title="Мэтчинг Звонков", layout="wide")
+st.title("📞 Мэтчинг звонков и Метрики (60 минут)")
 
 st.markdown("""
 **Инструкция:**
-1. Загрузите файл **Метрика.xlsx** (начиная с 8-й строки)
+1. Загрузите файл **Метрика.xlsx** (в таблице данные с 8 строки)
 2. Загрузите файл **Звонки.xlsx**
-3. Нажмите кнопку ниже для сопоставления звонков с визитами.
-4. Скачайте Excel с результатами.
+3. Нажмите на кнопку ниже — и получите Excel с совпадениями.
 """)
 
-metrika_file = st.file_uploader("Загрузите файл Метрики (XLSX)", type=["xlsx"], key="metrika")
-calls_file = st.file_uploader("Загрузите файл Звонков (XLSX)", type=["xlsx"], key="calls")
+metrika_file = st.file_uploader("📊 Загрузите файл Метрики", type="xlsx")
+calls_file = st.file_uploader("📞 Загрузите файл Звонков", type="xlsx")
 
-def match_data(visits_df, calls_df):
-    # Преобразование звонков
-    calls_df['call_datetime'] = pd.to_datetime(calls_df.iloc[:, 0], errors='coerce')
-    calls_df['call_time'] = calls_df['call_datetime'].dt.time
-    calls_df['call_date'] = calls_df['call_datetime'].dt.date
-    calls_df['region'] = calls_df.iloc[:, 1].astype(str).str.lower().str.strip()
+def normalize_region(s):
+    return str(s).strip().lower().replace('г.', '').replace('-', '').replace('ё', 'е').replace(' ', '')
 
-    # Преобразование визитов
-    visits_df = visits_df.dropna(subset=[visits_df.columns[0]])
-    visits_df['visit_datetime'] = pd.to_datetime(visits_df.iloc[:, 0], errors='coerce')
-    visits_df['region'] = visits_df.iloc[:, 1].astype(str).str.lower().str.strip()
+def process_visits(df):
+    # Найдём заголовок
+    for i, row in df.iterrows():
+        if str(row.iloc[0]).strip().lower().startswith('дата и время визита'):
+            df.columns = row
+            df = df.iloc[i+1:]
+            break
+    df = df.dropna(how='all')
+    df = df[~df.iloc[:, 0].astype(str).str.contains('итого', case=False, na=False)]
+    df.columns = df.columns.str.strip()
+    df['visit_time'] = pd.to_datetime(df['Дата и время визита'], errors='coerce')
+    df['region'] = df['Город'].apply(normalize_region)
+    df = df.dropna(subset=['visit_time', 'region'])
+    df['visit_end'] = df['visit_time'] + timedelta(minutes=60)
+    return df
 
-    # Мэтчинг
-    matched = []
-    for _, visit in visits_df.iterrows():
-        for _, call in calls_df.iterrows():
-            if (
-                call['region'] in visit['region']
-                and 0 <= (call['call_datetime'] - visit['visit_datetime']).total_seconds() <= 3600
-            ):
-                matched.append({
-                    'Call Time': call['call_time'],
-                    'Call Date': call['call_date'],
-                    'Region': call['region'],
-                    'Visit Time': visit['visit_datetime'],
-                    'Visit Region': visit['region']
-                })
-    return pd.DataFrame(matched)
+def process_calls(df):
+    df.columns = df.columns.str.strip()
+    df['call_time'] = pd.to_datetime(df['Дата'].astype(str) + ' ' + df['Время'].astype(str), errors='coerce')
+    df['region'] = df['Город'].apply(normalize_region)
+    df = df.dropna(subset=['call_time', 'region'])
+    return df
+
+def match_data(calls, visits):
+    merged = pd.merge(calls, visits[['visit_time', 'visit_end', 'region']], on='region', how='inner')
+    merged = merged[
+        (merged['call_time'] >= merged['visit_time']) &
+        (merged['call_time'] <= merged['visit_end'])
+    ].copy()
+    merged['Call Time'] = merged['call_time'].dt.time
+    merged['Call Date'] = merged['call_time'].dt.date
+    final = merged.groupby('call_time').first().reset_index()
+    return final[['Call Time', 'Call Date', 'region', 'visit_time']]
 
 if metrika_file and calls_file:
-    with st.spinner("Загружаем и сопоставляем данные..."):
+    with st.spinner("🔄 Обрабатываем..."):
         try:
-            visits = pd.read_excel(metrika_file, skiprows=7)
-            calls = pd.read_excel(calls_file)
-            result_df = match_data(visits, calls)
+            visits_raw = pd.read_excel(metrika_file, header=None)
+            visits_df = process_visits(visits_raw)
+            calls_df = pd.read_excel(calls_file)
+            calls_df = process_calls(calls_df)
+            result_df = match_data(calls_df, visits_df)
 
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                result_df.to_excel(writer, index=False, sheet_name='Совпадения')
-                visits.to_excel(writer, index=False, sheet_name='Метрика')
-                calls.to_excel(writer, index=False, sheet_name='Звонки')
+                result_df.to_excel(writer, sheet_name="Совпадения", index=False)
+                visits_raw.to_excel(writer, sheet_name="Метрика", index=False, header=False)
+                calls_df.to_excel(writer, sheet_name="Звонки", index=False)
 
-            st.success(f"Найдено совпадений: {len(result_df)}")
-            st.download_button("Скачать результат (XLSX)", data=output.getvalue(), file_name="Результат_Мэтчинга.xlsx")
+            st.success(f"✅ Найдено совпадений: {len(result_df)}")
+            st.download_button("📥 Скачать Excel", data=output.getvalue(), file_name="Результат_мэтчинга.xlsx")
         except Exception as e:
-            st.error(f"Ошибка обработки: {e}")
+            st.error(f"❌ Ошибка: {e}")
