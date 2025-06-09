@@ -22,19 +22,30 @@ calls_file = st.file_uploader("📞 Загрузите звонки из CRM", t
 st.header("🧾 План-Факт: Ввод данных")
 
 report_date_range = st.date_input("📅 Период отчета", value=(pd.to_datetime("today").replace(day=1), pd.to_datetime("today")), format="DD.MM.YYYY")
-search_cost = st.number_input("💰 Расход Поиск (с НДС)", min_value=0.0, step=100.0)
-rsya_cost = st.number_input("💰 Расход РСЯ (с НДС)", min_value=0.0, step=100.0)
 
-# Новые поля ввода для Поиска и РСЯ
-st.subheader("🔍 Поиск")
-search_impressions = st.number_input("👁 Показы факт (Поиск)", min_value=0, step=100)
-search_clicks = st.number_input("🖱 Клики факт (Поиск)", min_value=0, step=10)
-search_goals = st.number_input("🎯 Заявки по Метрике (Поиск)", min_value=0, step=1)
+col1, col2, col3 = st.columns(3)
+with col1:
+    search_cost = st.number_input("💰 Расход Поиск (с НДС)", min_value=0.0, step=100.0)
+with col2:
+    search_impressions = st.number_input("👁 Показы Поиск", min_value=0, step=100)
+with col3:
+    search_clicks = st.number_input("🖱 Клики Поиск", min_value=0, step=1)
 
-st.subheader("🟡 РСЯ")
-rsya_impressions = st.number_input("👁 Показы факт (РСЯ)", min_value=0, step=100)
-rsya_clicks = st.number_input("🖱 Клики факт (РСЯ)", min_value=0, step=10)
-rsya_goals = st.number_input("🎯 Заявки по Метрике (РСЯ)", min_value=0, step=1)
+col4, col5 = st.columns(2)
+with col4:
+    search_conversions = st.number_input("📩 Заявки Поиск (по Метрике)", min_value=0, step=1)
+
+col6, col7, col8 = st.columns(3)
+with col6:
+    rsya_cost = st.number_input("💰 Расход РСЯ (с НДС)", min_value=0.0, step=100.0)
+with col7:
+    rsya_impressions = st.number_input("👁 Показы РСЯ", min_value=0, step=100)
+with col8:
+    rsya_clicks = st.number_input("🖱 Клики РСЯ", min_value=0, step=1)
+
+col9 = st.columns(1)[0]
+with col9:
+    rsya_conversions = st.number_input("📩 Заявки РСЯ (по Метрике)", min_value=0, step=1)
 
 def normalize_region(s):
     return str(s).strip().lower().replace('г.', '').replace('-', '').replace('ё', 'е').replace(' ', '')
@@ -160,13 +171,12 @@ if st.button("🚀 Сгенерировать отчет"):
                     plan_fact_ws["D4"] = f"{report_date_range[0].strftime('%d.%m.%Y')} – {report_date_range[1].strftime('%d.%m.%Y')}"
                     plan_fact_ws["F8"] = search_cost
                     plan_fact_ws["F9"] = rsya_cost
-                    # Новые значения для показов, кликов, заявок (Поиск и РСЯ)
                     plan_fact_ws["H8"] = search_impressions
                     plan_fact_ws["H9"] = rsya_impressions
                     plan_fact_ws["J8"] = search_clicks
                     plan_fact_ws["J9"] = rsya_clicks
-                    plan_fact_ws["P8"] = search_goals
-                    plan_fact_ws["P9"] = rsya_goals
+                    plan_fact_ws["P8"] = search_conversions
+                    plan_fact_ws["P9"] = rsya_conversions
                     plan_fact_ws["Q8"] = len(result_df)
                 except Exception as e:
                     st.warning(f"⚠️ Не удалось записать данные в 'План-Факт': {e}")
