@@ -73,14 +73,18 @@ def match_data(calls, visits):
         'visit_time': 'Время визита'
     }).drop_duplicates()
 
-if metrika_file and calls_file:
+result_df = pd.DataFrame()
+if st.button("🚀 Сгенерировать отчет"):
     with st.spinner("🔄 Обрабатываем данные..."):
         try:
-            visits_raw = pd.read_excel(metrika_file, header=None)
-            visits_df = process_visits(visits_raw)
-            calls_df = pd.read_excel(calls_file)
-            calls_df = process_calls(calls_df)
-            result_df = match_data(calls_df, visits_df)
+            if metrika_file and calls_file:
+                visits_raw = pd.read_excel(metrika_file, header=None)
+                visits_df = process_visits(visits_raw)
+                calls_df = pd.read_excel(calls_file)
+                calls_df = process_calls(calls_df)
+                result_df = match_data(calls_df, visits_df)
+            else:
+                result_df = pd.DataFrame()  # пустая таблица совпадений
 
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -145,10 +149,18 @@ if metrika_file and calls_file:
                     max_length = 20
                     col_letter = column_cells[0].column_letter
                     worksheet.column_dimensions[col_letter].width = max_length
-                visits_raw.to_excel(writer, sheet_name="Метрика", index=False, header=False)
-                pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
+                if metrika_file:
+                    visits_raw.to_excel(writer, sheet_name="Метрика", index=False, header=False)
+                if calls_file:
+                    pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
 
-            st.success(f"✅ Найдено совпадений: {len(result_df)}")
-            st.download_button("📥 Скачать Отчет ТТК", data=output.getvalue(), file_name="Отчет_ТТК.xlsx")
         except Exception as e:
             st.error(f"❌ Ошибка обработки: {e}")
+
+if not result_df.empty:
+    st.success(f"✅ Найдено совпадений: {len(result_df)}")
+else:
+    st.info("ℹ️ Отчет не сгенерирован или совпадений не найдено.")
+
+if 'output' in locals():
+    st.download_button("📥 Скачать Отчет ТТК", data=output.getvalue(), file_name="Отчет_ТТК.xlsx")
