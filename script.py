@@ -95,7 +95,7 @@ if metrika_file and calls_file:
                 }
                 response = requests.get(plan_template_url, headers=headers)
 
-                if response.status_code == 200 and response.headers.get("Content-Type") == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                if response.status_code == 200:
                     template_excel = BytesIO(response.content)
                     wb_template = load_workbook(template_excel, data_only=True)
 
