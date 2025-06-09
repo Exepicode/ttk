@@ -55,6 +55,10 @@ def match_data(calls, visits):
         (merged['call_time'] >= merged['visit_time']) &
         (merged['call_time'] <= merged['visit_end'])
     ].copy()
+
+    merged['time_diff'] = (merged['call_time'] - merged['visit_time']).abs()
+    merged = merged.sort_values('time_diff').drop_duplicates(subset=['visit_time', 'region'])
+    merged = merged.drop(columns=['time_diff'])
     merged['Call DateTime'] = merged['call_time']
     return merged[['call_time', 'visit_time', 'region']].rename(columns={
         'call_time': 'Время звонка',
