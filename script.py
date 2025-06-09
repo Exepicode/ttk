@@ -87,8 +87,9 @@ if metrika_file and calls_file:
                         template_excel = BytesIO(response.content)
                         wb_template = load_workbook(template_excel, data_only=True)
 
-                        if "План-Факт" in wb_template.sheetnames:
-                            source_ws = wb_template["План-Факт"]
+                        if wb_template.sheetnames:
+                            source_ws = wb_template.worksheets[0]
+                            source_ws.title = "План-Факт"
                             target_ws = writer.book.create_sheet("План-Факт")
 
                             for row in source_ws.iter_rows():
@@ -102,7 +103,7 @@ if metrika_file and calls_file:
                                         new_cell.protection = cell.protection
                                         new_cell.alignment = cell.alignment
                         else:
-                            st.warning("⚠️ В шаблоне отсутствует лист 'План-Факт'")
+                            st.warning("⚠️ В шаблоне отсутствуют листы")
                     else:
                         st.warning(f"⚠️ Не удалось скачать шаблон: статус {response.status_code}")
                 except Exception as e:
