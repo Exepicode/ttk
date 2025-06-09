@@ -86,16 +86,12 @@ if metrika_file and calls_file:
                 visits_raw.to_excel(writer, sheet_name="Метрика", index=False, header=False)
                 pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
 
-                # Добавляем лист "План-Факт"
-                try:
-                    uploaded_plan_fact = pd.read_excel(calls_file, sheet_name=0, header=None)
-                    # Найдем строку, где начинается таблица с "Период кампании"
-                    start_row = uploaded_plan_fact[uploaded_plan_fact.iloc[:, 2] == 'Период кампании'].index[0] + 2
-                    headers_row = start_row
-                    plan_fact_df = pd.read_excel(calls_file, sheet_name=0, header=headers_row)
-                    plan_fact_df.to_excel(writer, sheet_name="План-Факт", index=False)
-                except Exception as pf_err:
-                    print(f"Не удалось добавить лист План-Факт: {pf_err}")
+                plan_fact_data = {
+                    'Показатель': ['Количество совпадений', 'План', 'Факт', '% выполнения'],
+                    'Значение': [len(result_df), 100, len(result_df), f"{len(result_df)}%"]
+                }
+                plan_fact_df = pd.DataFrame(plan_fact_data)
+                plan_fact_df.to_excel(writer, sheet_name="План-Факт", index=False)
 
             st.success(f"✅ Найдено совпадений: {len(result_df)}")
             st.download_button("📥 Скачать Отчет ТТК", data=output.getvalue(), file_name="Отчет_ТТК.xlsx")
