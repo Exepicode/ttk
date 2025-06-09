@@ -86,12 +86,86 @@ if metrika_file and calls_file:
                 visits_raw.to_excel(writer, sheet_name="Метрика", index=False, header=False)
                 pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
 
-                plan_fact_data = {
-                    'Показатель': ['Количество совпадений', 'План', 'Факт', '% выполнения'],
-                    'Значение': [len(result_df), 100, len(result_df), f"{len(result_df)}%"]
-                }
-                plan_fact_df = pd.DataFrame(plan_fact_data)
-                plan_fact_df.to_excel(writer, sheet_name="План-Факт", index=False)
+                # Кастомное создание листа "План-Факт"
+                import openpyxl
+                from openpyxl.styles import Font, Alignment
+
+                # Список заголовков
+                plan_fact_headers = [
+                    "#", "Сайт", "Место размещения на сайте и таргетинги", "Расход план", "Расход факт",
+                    "Показы план", "Показы факт", "Клики план", "Клики факт", "CTR % план", "CTR % факт",
+                    "CPC план", "CPC факт", "Заявки план", "Заявки метрика", "Звонки", "Все заявки",
+                    "CR % факт", "CPL план", "CPL факт"
+                ]
+                # Примерные данные (2 строки)
+                plan_fact_data = [
+                    [
+                        1, "yandex.ru", "Главная, Москва", "100 000 ₽", "95 000 ₽",
+                        "1 000 000", "950 000", "10 000", "9 500", "1,00%", "1,00%",
+                        "10,00 ₽", "10,00 ₽", "500", "480", "50", "530", "5,6%", "200,00 ₽", "198,00 ₽"
+                    ],
+                    [
+                        2, "vk.com", "Лента, Санкт-Петербург", "50 000 ₽", "48 000 ₽",
+                        "500 000", "480 000", "5 000", "4 800", "1,00%", "1,00%",
+                        "10,00 ₽", "10,00 ₽", "250", "240", "20", "260", "5,4%", "200,00 ₽", "192,00 ₽"
+                    ]
+                ]
+                # Итоговая строка (суммы, выделить жирным)
+                plan_fact_totals = [
+                    "Итого", "", "",
+                    "150 000 ₽", "143 000 ₽",
+                    "1 500 000", "1 430 000",
+                    "15 000", "14 300",
+                    "1,00%", "1,00%",
+                    "10,00 ₽", "10,00 ₽",
+                    "750", "720", "70", "790",
+                    "5,5%", "200,00 ₽", "190,00 ₽"
+                ]
+
+                # Сначала создаем DataFrame для данных и заголовков (без верхних 3 строк)
+                plan_fact_df = pd.DataFrame(plan_fact_data, columns=plan_fact_headers)
+
+                # Записываем в Excel начиная с строки 5 (то есть startrow=4)
+                plan_fact_df.to_excel(writer, sheet_name="План-Факт", index=False, startrow=4)
+                # Теперь открываем рабочий лист openpyxl
+                ws = writer.sheets["План-Факт"]
+
+                # Верхние ячейки
+                ws["A1"] = "Клиент"
+                ws["B1"] = "ТТК-Связь"
+                ws["A2"] = "Продукт/Кампания"
+                ws["B2"] = "Услуги домашнего интернета и телевидения."
+                ws["A3"] = "Период кампании"
+                ws["B3"] = "01.05-26.05"
+
+                # Шапка (выравнивание, жирный)
+                header_font = Font(bold=True)
+                for col_idx in range(1, len(plan_fact_headers) + 1):
+                    cell = ws.cell(row=5, column=col_idx)
+                    cell.font = header_font
+                    cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+                # Итоговая строка (жирный, выравнивание)
+                total_row_idx = 5 + len(plan_fact_data) + 1  # 5 (шапка) + 2 (данные) + 1 = 8
+                for col_idx in range(1, len(plan_fact_totals) + 1):
+                    cell = ws.cell(row=total_row_idx, column=col_idx)
+                    cell.value = plan_fact_totals[col_idx - 1]
+                    cell.font = Font(bold=True)
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+
+                # Выравнивание всех данных
+                for row in ws.iter_rows(min_row=6, max_row=total_row_idx, min_col=1, max_col=len(plan_fact_headers)):
+                    for cell in row:
+                        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+                # Форматирование ширины столбцов для читаемости
+                for col_idx, header in enumerate(plan_fact_headers, 1):
+                    width = 20
+                    if header in ("#", "Сайт"):
+                        width = 12
+                    elif header in ("Место размещения на сайте и таргетинги",):
+                        width = 32
+                    ws.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = width
 
             st.success(f"✅ Найдено совпадений: {len(result_df)}")
             st.download_button("📥 Скачать Отчет ТТК", data=output.getvalue(), file_name="Отчет_ТТК.xlsx")
