@@ -167,6 +167,31 @@ if metrika_file and calls_file:
                         width = 32
                     ws.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = width
 
+                import requests
+                from openpyxl import load_workbook
+
+                # Загружаем шаблон с GitHub
+                plan_template_url = "https://github.com/Exepicode/ttk/raw/refs/heads/main/ТТК-шаблон-отчета.xlsx"
+                response = requests.get(plan_template_url)
+                template_excel = BytesIO(response.content)
+
+                wb_template = load_workbook(template_excel)
+                if "План-Факт" in wb_template.sheetnames:
+                    plan_fact_ws = wb_template["План-Факт"]
+                    new_ws = writer.book.create_sheet("План-Факт")
+
+                    for row in plan_fact_ws.iter_rows():
+                        for cell in row:
+                            new_cell = new_ws[cell.coordinate]
+                            new_cell.value = cell.value
+                            if cell.has_style:
+                                new_cell.font = cell.font
+                                new_cell.border = cell.border
+                                new_cell.fill = cell.fill
+                                new_cell.number_format = cell.number_format
+                                new_cell.protection = cell.protection
+                                new_cell.alignment = cell.alignment
+
             st.success(f"✅ Найдено совпадений: {len(result_df)}")
             st.download_button("📥 Скачать Отчет ТТК", data=output.getvalue(), file_name="Отчет_ТТК.xlsx")
         except Exception as e:
