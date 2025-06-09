@@ -77,13 +77,6 @@ result_df = pd.DataFrame()
 
 if not result_df.empty:
     st.success(f"✅ Найдено совпадений: {len(result_df)}")
-else:
-    if not metrika_file or not calls_file:
-        st.info("ℹ️ Отчет будет без совпадений — загрузите файлы Метрики и Звонков, чтобы выполнить мэтчинг.")
-    elif 'output' not in locals():
-        st.info("ℹ️ Отчет ожидает генерации — нажмите кнопку ниже.")
-    else:
-        st.info("ℹ️ Отчет готов, но совпадений между звонками и визитами не найдено.")
 
 if st.button("🚀 Сгенерировать отчет"):
     with st.spinner("🔄 Обрабатываем данные..."):
@@ -138,6 +131,7 @@ if st.button("🚀 Сгенерировать отчет"):
                             for row_idx, dim in source_ws.row_dimensions.items():
                                 target_ws.row_dimensions[row_idx].height = dim.height
                             target_ws.row_dimensions[7].height = 1
+                            target_ws.column_dimensions['F'].width = 100
                         else:
                             st.warning("⚠️ В шаблоне отсутствуют листы")
                     else:
