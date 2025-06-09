@@ -95,13 +95,16 @@ if metrika_file and calls_file:
                             for row in source_ws.iter_rows():
                                 for cell in row:
                                     new_cell = target_ws.cell(row=cell.row, column=cell.column, value=cell.value)
-                                    if cell.has_style:
-                                        new_cell.font = cell.font
-                                        new_cell.border = cell.border
-                                        new_cell.fill = cell.fill
-                                        new_cell.number_format = cell.number_format
-                                        new_cell.protection = cell.protection
-                                        new_cell.alignment = cell.alignment
+                                    try:
+                                        if cell.has_style:
+                                            new_cell.font = cell.font.copy()
+                                            new_cell.border = cell.border.copy()
+                                            new_cell.fill = cell.fill.copy()
+                                            new_cell.number_format = cell.number_format
+                                            new_cell.protection = cell.protection.copy()
+                                            new_cell.alignment = cell.alignment.copy()
+                                    except Exception as style_error:
+                                        st.warning(f"⚠️ Стиль не скопирован для ячейки {cell.coordinate}: {style_error}")
                         else:
                             st.warning("⚠️ В шаблоне отсутствуют листы")
                     else:
