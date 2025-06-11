@@ -19,6 +19,7 @@ st.markdown("""
 
 metrika_file = st.file_uploader("📊 Загрузите выгрузку из Метрики", type="xlsx")
 calls_file = st.file_uploader("📞 Загрузите звонки из CRM", type="xlsx")
+direct_file = st.file_uploader("📈 Загрузите файл из Мастера отчетов (Яндекс.Директ) — [открыть отчет](https://direct.yandex.ru/dna/reports/wizard?ulogin=ttk-igc&state=157105)", type="xlsx")
 
 st.header("🧾 План-Факт: Ввод данных")
 
@@ -234,6 +235,8 @@ if st.button("🚀 Сгенерировать отчет"):
                     visits_raw.to_excel(writer, sheet_name="Метрика", index=False, header=False)
                 if calls_file:
                     pd.read_excel(calls_file).to_excel(writer, sheet_name="Звонки", index=False)
+                if direct_file:
+                    pd.read_excel(direct_file).to_excel(writer, sheet_name="Статистика Директ", index=False)
 
             st.download_button(
                 label="📥 Скачать отчет (XLSX)",
