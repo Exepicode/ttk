@@ -10,14 +10,14 @@ st.title("📞 Отчет ТТК — Мэтчинг звонков и визит
 
 st.markdown("""
 **Инструкция:**
-1. Загрузите файл **выгрузки из Метрики** — [открыть](https://metrika.yandex.ru/stat/visits)  
-   *(Период — с начала месяца до последнего воскресенья, формат — XLSX)*
+1. Загрузите файл **выгрузки из Метрики** — [открыть](https://metrika.yandex.ru/stat/6cfa6793-da4e-405e-8815-75076218c2af?group=dekaminute&period=today&currency=RUB&id=51634436&isMinSamplingEnabled=false&attr=%7B%22attributionId%22%3A%22LastSign%22%2C%22isCrossDevice%22%3Afalse%7D&stateHash=67f77d9a2d9408000c389012)  
+   *(Период — с начала месяца до последнего воскресенья, формат — XLSX. Цель — **Mouseover Телефон 2**)  
    [🎓 Тестовый файл](https://github.com/Exepicode/ttk/raw/refs/heads/main/тестовый-метрика)
 2. Загрузите файл **звонков из CRM** *(присылается КС в чат под названием «Детальный отчет»)*  
    [🎓 Тестовый файл](https://github.com/Exepicode/ttk/raw/refs/heads/main/тестовый-Детальный%20отчет%20Июнь%201-8.xlsx)
 3. Загрузите файл **статистики из Мастера отчетов** — [открыть](https://direct.yandex.ru/dna/reports/wizard?ulogin=ttk-igc&state=157105)  
    [🎓 Тестовый файл](https://github.com/Exepicode/ttk/raw/refs/heads/main/тестовый%20файл%20мастер%20отчетов.xlsx)
-4. Заполните показатели **План-Факт** в блоках Поиск и РСЯ
+4. Заполните показатели **Факт** в блоках Поиск и РСЯ
 5. *(Опционально)* Измените плановые значения (по умолчанию — июнь 2025)
 6. Нажмите кнопку **«Сгенерировать отчет»**
 7. Скачайте готовый отчет
@@ -27,7 +27,7 @@ metrika_file = st.file_uploader("📊 Загрузите выгрузку из �
 calls_file = st.file_uploader("📞 Загрузите звонки из CRM", type="xlsx")
 direct_file = st.file_uploader("📈 Загрузите файл из Мастера отчетов (Яндекс.Директ) — [открыть отчет](https://direct.yandex.ru/dna/reports/wizard?ulogin=ttk-igc&state=157105)", type="xlsx")
 
-st.header("🧾 План-Факт: Ввод данных")
+st.header("🧾 Факт: Ввод данных")
 
 report_date_range = st.date_input("📅 Период отчета", value=(pd.to_datetime("today").replace(day=1), pd.to_datetime("today")), format="DD.MM.YYYY")
 
@@ -161,7 +161,7 @@ if st.button("🚀 Сгенерировать отчет"):
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
 
-                # Добавляем шаблон "План-Факт" из GitHub как лист
+                # Добавляем шаблон "Факт" из GitHub как лист
                 try:
                     template_url = "https://github.com/Exepicode/ttk/raw/main/ТТК-шаблон-отчета.xlsx"
                     response = requests.get(template_url)
@@ -171,8 +171,8 @@ if st.button("🚀 Сгенерировать отчет"):
 
                         if wb_template.sheetnames:
                             source_ws = wb_template.worksheets[0]
-                            source_ws.title = "План-Факт"
-                            target_ws = writer.book.create_sheet("План-Факт")
+                            source_ws.title = "Факт"
+                            target_ws = writer.book.create_sheet("Факт")
 
                             for row in source_ws.iter_rows():
                                 if all(cell.value in (None, "") for cell in row):
@@ -205,30 +205,30 @@ if st.button("🚀 Сгенерировать отчет"):
                     else:
                         st.warning(f"⚠️ Не удалось скачать шаблон: статус {response.status_code}")
                 except Exception as e:
-                    st.warning(f"⚠️ Ошибка при вставке шаблона 'План-Факт': {e}")
+                    st.warning(f"⚠️ Ошибка при вставке шаблона 'Факт': {e}")
 
                 try:
-                    plan_fact_ws = writer.book["План-Факт"]
-                    plan_fact_ws["D4"] = f"{report_date_range[0].strftime('%d.%m.%Y')} – {report_date_range[1].strftime('%d.%m.%Y')}"
-                    plan_fact_ws["F8"] = search_cost
-                    plan_fact_ws["F9"] = rsya_cost
-                    plan_fact_ws["H8"] = search_impressions
-                    plan_fact_ws["H9"] = rsya_impressions
-                    plan_fact_ws["J8"] = search_clicks
-                    plan_fact_ws["J9"] = rsya_clicks
-                    plan_fact_ws["P8"] = search_conversions
-                    plan_fact_ws["P9"] = rsya_conversions
-                    plan_fact_ws["Q8"] = len(result_df)
-                    plan_fact_ws["E8"] = search_cost_plan
-                    plan_fact_ws["E9"] = rsya_cost_plan
-                    plan_fact_ws["G8"] = search_impressions_plan
-                    plan_fact_ws["G9"] = rsya_impressions_plan
-                    plan_fact_ws["I8"] = search_clicks_plan
-                    plan_fact_ws["I9"] = rsya_clicks_plan
-                    plan_fact_ws["O8"] = search_conversions_plan
-                    plan_fact_ws["O9"] = rsya_conversions_plan
+                    fact_ws = writer.book["Факт"]
+                    fact_ws["D4"] = f"{report_date_range[0].strftime('%d.%m.%Y')} – {report_date_range[1].strftime('%d.%m.%Y')}"
+                    fact_ws["F8"] = search_cost
+                    fact_ws["F9"] = rsya_cost
+                    fact_ws["H8"] = search_impressions
+                    fact_ws["H9"] = rsya_impressions
+                    fact_ws["J8"] = search_clicks
+                    fact_ws["J9"] = rsya_clicks
+                    fact_ws["P8"] = search_conversions
+                    fact_ws["P9"] = rsya_conversions
+                    fact_ws["Q8"] = len(result_df)
+                    fact_ws["E8"] = search_cost_plan
+                    fact_ws["E9"] = rsya_cost_plan
+                    fact_ws["G8"] = search_impressions_plan
+                    fact_ws["G9"] = rsya_impressions_plan
+                    fact_ws["I8"] = search_clicks_plan
+                    fact_ws["I9"] = rsya_clicks_plan
+                    fact_ws["O8"] = search_conversions_plan
+                    fact_ws["O9"] = rsya_conversions_plan
                 except Exception as e:
-                    st.warning(f"⚠️ Не удалось записать данные в 'План-Факт': {e}")
+                    st.warning(f"⚠️ Не удалось записать данные в 'Факт': {e}")
 
                 result_df.to_excel(writer, sheet_name="Совпадения", index=False)
                 # Устанавливаем ширину столбцов на листе "Совпадения"
